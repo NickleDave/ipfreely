@@ -1,7 +1,7 @@
 ipfreely
 ========
 
-ipfreely emails you when your dynamic IP changes
+ipfreely emails you when your dynamic IP address changes
 
 Features
 --------
