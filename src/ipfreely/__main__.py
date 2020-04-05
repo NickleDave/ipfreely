@@ -84,7 +84,7 @@ def cli(args):
 def get_parser():
     parser = argparse.ArgumentParser(description='Checks ip address and sends an email'
                                                  ' when it changes. To check ip, run '
-                                                 'scripts with no command line arguments.')
+                                                 ' with no command line arguments.')
     parser.add_argument('-f', '--from_email',
                         help='email address from which to send alerts when ip address changes')
     parser.add_argument('-p', '--password',
