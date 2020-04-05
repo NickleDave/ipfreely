@@ -27,5 +27,7 @@ def get_parser():
     config_subparser.add_argument('-n', '--name',
                                   help='name for this computer (in case you have ipfreely running on'
                                        ' multiple computers')
-
+    config_subparser.add_argument('-m', '--mode', choices=["send", "check"],
+                                  help="mode that ipfreely runs in, one of {'send', 'check'}."
+                                       "'check' means 'only send email if IP has changed'.")
     return parser
