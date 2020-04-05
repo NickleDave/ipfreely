@@ -113,7 +113,7 @@ setup(
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
     entry_points={
-        'console_scripts': ['searchnets=searchnets.__main__:main'],
+        'console_scripts': ['ipfreely=ipfreely.__main__:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
