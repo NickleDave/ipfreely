@@ -5,7 +5,7 @@ import os
 import smtplib
 import sys
 
-import ipgetter
+from ipgetter2 import ipgetter1 as ipgetter
 
 from .constants import ADDRESS_FILE
 
