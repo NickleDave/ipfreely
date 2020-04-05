@@ -1,4 +1,3 @@
-import os
 import sys
 import subprocess
 import platform
@@ -6,13 +5,13 @@ import platform
 import argparse
 import json
 
-from .constants import SETTINGS_FILE, SETTINGS_FILE_PATH
+from .constants import CONFIG_ROOT, SETTINGS_PATH
 from .util import check_ip, get_script_dir
 
 
 def cli(args):
     if len(sys.argv) < 2:
-        if not os.path.isfile(SETTINGS_FILE):
+        if not SETTINGS_PATH.exists():
             raise FileNotFoundError('ipfreely did not find settings file.\n'
                                     'To create the settings file, run the '
                                     'script using the command line arguments.\n'
@@ -20,9 +19,8 @@ def cli(args):
                                     'to see all arguments.')
 
         else:
-            with open(SETTINGS_FILE_PATH + SETTINGS_FILE,
-                      'r') as settings_file:
-                settings = json.load(settings_file)
+            with SETTINGS_PATH.open('r') as fp:
+                settings = json.load(fp)
             if 'from_email' not in settings:
                 raise KeyError('from_email is not set in settings file')
             elif 'password' not in settings:
@@ -33,13 +31,13 @@ def cli(args):
                 check_ip(settings)
 
     else:  # if there were command line arguments
-        if os.path.isfile(SETTINGS_FILE_PATH + SETTINGS_FILE):
-            with open(SETTINGS_FILE_PATH + SETTINGS_FILE,
-                      'r') as settings_file:
-                settings = json.load(settings_file)
+        if SETTINGS_PATH.exists():
+            with SETTINGS_PATH.open('r') as fp:
+                settings = json.load(fp)
         else:
             settings = {}
-            os.makedirs(SETTINGS_FILE_PATH, exist_ok=True)
+            CONFIG_ROOT.mkdir(exist_ok=True)
+
         if any([hasattr(args, arg) for arg in ['from_email',
                                                'password',
                                                'to_email',
@@ -58,8 +56,9 @@ def cli(args):
             if args.name:
                 settings['name'] = args.name
 
-            with open(SETTINGS_FILE_PATH + SETTINGS_FILE, 'w+') as settings_file:
-                json.dump(settings, settings_file)
+            with SETTINGS_PATH.open('w') as fp:
+                json.dump(settings, fp)
+
         if args.activate or args.deactivate:
             if platform.system() == 'Windows':
                 schtasks = "c:\windows\System32\schtasks.exe"
