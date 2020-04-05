@@ -1,3 +1,5 @@
+![Moe from the Simpsons shouting "Hey! Everybody! I pee freely" to a bar full of people](./doc/images/ipfreely.gif)
+
 ipfreely
 ========
 
