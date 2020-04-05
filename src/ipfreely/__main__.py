@@ -40,10 +40,10 @@ def cli(args):
         else:
             settings = {}
             os.makedirs(SETTINGS_FILE_PATH, exist_ok=True)
-        if any([hasattr(args.arg) for arg in ['from_email',
-                                              'password',
-                                              'to_email',
-                                              'name']]):
+        if any([hasattr(args, arg) for arg in ['from_email',
+                                               'password',
+                                               'to_email',
+                                               'name']]):
             if args.from_email:
                 settings['from_email'] = args.from_email
             if args.password:
