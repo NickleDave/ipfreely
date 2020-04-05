@@ -18,6 +18,20 @@ Installation
 3. `$ python ipfreely --from throwaway_address throwaway_password`
 4. `$ python ipfreely --to your_actual_email@gmail.probably.com`
 
+Usage
+-----
+`ipfreely` runs through a command-line interface.
+
+For a list of commands you can run
+```console
+$ ipfreely -h
+``` 
+
+Currently it only works with gmail; you'll want to set up a throwaway account and 
+in the account settings turn [Allow less secure apps to ON](https://myaccount.google.com/lesssecureapps).
+
+
+
 Contribute
 ----------
 
