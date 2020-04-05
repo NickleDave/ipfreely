@@ -7,7 +7,7 @@ import sys
 
 from ipgetter2 import ipgetter1 as ipgetter
 
-from .constants import ADDRESS_FILE
+from .constants import CURRENT_IP_ADDRESS_PATH
 
 __all__ = [
     'check_ip',
@@ -35,20 +35,16 @@ def get_script_dir(follow_symlinks=True):
 
 
 def persist_ip(ip):
-    """writes ip to text file
-    """
-    f = open(ADDRESS_FILE, 'w')
-    f.write(ip)
-    f.close()
+    """writes ip to text file"""
+    with CURRENT_IP_ADDRESS_PATH.open('w') as fp:
+        fp.write(ip)
 
 
 def read_saved_ip():
-    """reads current ip
-    """
-    f = open(ADDRESS_FILE, 'r')
-    savedIp = f.read()
-    f.close()
-    return savedIp
+    """reads current ip"""
+    with CURRENT_IP_ADDRESS_PATH.open('r') as fp:
+        saved_ip = fp.read()
+    return saved_ip
 
 
 def check_ip(settings):
@@ -56,7 +52,7 @@ def check_ip(settings):
     """
     currIP = ipgetter.myip()
 
-    if not os.path.isfile(ADDRESS_FILE):
+    if not CURRENT_IP_ADDRESS_PATH.exists():
         # trigger the script to send email for the first time
         persist_ip('127.0.0.1')
 
