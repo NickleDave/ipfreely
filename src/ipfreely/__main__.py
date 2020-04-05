@@ -10,7 +10,7 @@ from .constants import SETTINGS_FILE, SETTINGS_FILE_PATH
 from .util import check_ip, get_script_dir
 
 
-def main():
+def cli(args):
     if len(sys.argv) < 2:
         if not os.path.isfile(SETTINGS_FILE):
             raise FileNotFoundError('ipfreely did not find settings file.\n'
@@ -103,7 +103,11 @@ def get_parser():
     return parser
 
 
-if __name__ == '__main__':
+def main():
     parser = get_parser()
     args = parser.parse_args()
-    main(args)
+    cli(args)
+
+
+if __name__ == '__main__':
+    main()
