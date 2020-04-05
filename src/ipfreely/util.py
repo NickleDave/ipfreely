@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 import inspect
 import os
 import smtplib
+import ssl
 import sys
 
 from ipgetter2 import ipgetter1 as ipgetter
@@ -47,31 +48,33 @@ def read_saved_ip():
     return saved_ip
 
 
+PORT = 465
+
+
 def check_ip(settings):
-    """checks if ip has changes
-    """
-    currIP = ipgetter.myip()
+    """checks if ip has changed"""
+    curr_ip = ipgetter.myip()
 
     if not CURRENT_IP_ADDRESS_PATH.exists():
-        # trigger the script to send email for the first time
+        # make a fake ip to trigger the script to send email for the first time
         persist_ip('127.0.0.1')
 
-    savedIP = read_saved_ip()
+    saved_ip = read_saved_ip()
 
-    if currIP != savedIP:
+    if curr_ip != saved_ip:
         for to_email in settings['to_email']:
-            msg = MIMEText("Public IP address has changed from {0} to {1}"
-                           .format(savedIP, currIP))
+            msg = MIMEText(
+                f"Public IP address has changed from {saved_ip} to {curr_ip}"
+            )
             msg['Subject'] = 'Alert - IP address has changed'
             msg['From'] = settings['from_email']
             msg['To'] = to_email
 
-            # Send the message via our own SMTP server, but don't include the
-            # envelope header.
-            s = smtplib.SMTP('localhost')
-            s.sendmail(settings['from_email'],
-                       to_email,
-                       msg.as_string())
-            s.quit()
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL("smtp.gmail.com", PORT, context=context) as server:
+                server.login(settings['from_email'], settings['password'])
+                server.sendmail(settings['from_email'],
+                                to_email,
+                                msg.as_string())
 
-        persist_ip(currIP)
+        persist_ip(curr_ip)
