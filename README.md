@@ -7,9 +7,8 @@ ipfreely emails you when your dynamic IP address changes
 
 Features
 --------
-
-- emails
 - ip addresses
+- emails
 
 Installation
 ------------
@@ -22,11 +21,12 @@ Installation
 Contribute
 ----------
 
-- Issue Tracker: github.com/$project/$project/issues
-- Source Code: github.com/$project/$project
+- Issue Tracker: https://github.com/NickleDave/ipfreely/issues
 
+Change Log
+----------
+[is here](doc/CHANGELOG.md)
 
 License
 -------
-
-WTFPL
+[BSD](./LICENSE)
