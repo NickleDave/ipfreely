@@ -1,2 +1,8 @@
+# IDE
 .idea/
+
+# dev cruft
+*.egg-info/
+__pycache__/
+
 .ipfreely/
