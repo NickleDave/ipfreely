@@ -51,6 +51,24 @@ def read_saved_ip():
 PORT = 465
 
 
+def send(settings, msg=None):
+    if msg is None:
+        # default message
+        msg = MIMEText(
+            f"Current public IP is {ipgetter.myip()}"
+        )
+        msg['Subject'] = 'Current public IP address'
+        msg['From'] = settings['from']
+        msg['To'] = settings['to']
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", PORT, context=context) as server:
+        server.login(settings['from'], settings['password'])
+        server.sendmail(settings['from'],
+                        settings['to'],
+                        msg.as_string())
+
+
 def check_ip(settings):
     """checks if ip has changed"""
     curr_ip = ipgetter.myip()
@@ -62,19 +80,16 @@ def check_ip(settings):
     saved_ip = read_saved_ip()
 
     if curr_ip != saved_ip:
-        for to_email in settings['to_email']:
-            msg = MIMEText(
-                f"Public IP address has changed from {saved_ip} to {curr_ip}"
-            )
-            msg['Subject'] = 'Alert - IP address has changed'
-            msg['From'] = settings['from_email']
-            msg['To'] = to_email
+        msg = MIMEText(
+            f"Public IP address has changed from {saved_ip} to {curr_ip}"
+        )
+        msg['Subject'] = 'Alert - IP address has changed'
+        msg['From'] = settings['from']
+        msg['To'] = settings['to']
 
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.gmail.com", PORT, context=context) as server:
-                server.login(settings['from_email'], settings['password'])
-                server.sendmail(settings['from_email'],
-                                to_email,
-                                msg.as_string())
+        send(settings, msg)
 
         persist_ip(curr_ip)
+
+    else:
+        return
