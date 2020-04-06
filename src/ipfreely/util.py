@@ -15,6 +15,7 @@ __all__ = [
     'get_script_dir',
     'persist_ip',
     'read_saved_ip',
+    'send'
 ]
 
 
