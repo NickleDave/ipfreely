@@ -5,80 +5,83 @@ import platform
 import json
 
 from . import argparser
+from . import cron
 from .constants import CONFIG_ROOT, SETTINGS_PATH
-from .util import check_ip, get_script_dir
+from .util import check_ip, send
+
+CONFIG_OPTIONS = ['from', 'to', 'password', 'name', 'mode']
+
+
+def _get_settings():
+    """helper function to get settings"""
+    if not SETTINGS_PATH.exists():
+        raise FileNotFoundError('ipfreely did not find settings file.\n'
+                                'To create the settings file, run the '
+                                'script using the command line arguments.\n'
+                                'Run \"ipfreely -h\" or \"ipfreely --help\"'
+                                'to see all arguments.')
+
+    with SETTINGS_PATH.open('r') as fp:
+        settings = json.load(fp)
+
+    for config_option in CONFIG_OPTIONS:
+        if config_option not in settings:
+            raise ValueError(
+                f'could not execute command because config option {config_option} is not set in settings file.'
+                f'Set it by executing: $ ipfreely config --{config_option} <value>'
+            )
+
+    return settings
 
 
 def cli(args):
-    if len(sys.argv) < 2:
-        if not SETTINGS_PATH.exists():
-            raise FileNotFoundError('ipfreely did not find settings file.\n'
-                                    'To create the settings file, run the '
-                                    'script using the command line arguments.\n'
-                                    'Run \"ipfreely -h\" or \"ipfreely --help\"'
-                                    'to see all arguments.')
+    """command-line interface logic"""
+    if args.command == 'send':
+        settings = _get_settings()
+        send(settings)
 
-        else:
-            with SETTINGS_PATH.open('r') as fp:
-                settings = json.load(fp)
-            if 'from_email' not in settings:
-                raise KeyError('from_email is not set in settings file')
-            elif 'password' not in settings:
-                raise KeyError('password is not set in settings file')
-            elif 'to_email' not in settings:
-                raise KeyError('to_email is not set in settings file')
-            else:
-                check_ip(settings)
+    elif args.command == 'check':
+        settings = _get_settings()
+        check_ip(settings)
 
-    else:  # if there were command line arguments
+    elif args.command == 'config':
+        # check for config dir, either get settings from it or if it doesn't exist create it
         if SETTINGS_PATH.exists():
+            # don't use "_get_settings" here because we don't want to
+            # throw an error about a setting that's not in the file when the user is trying to set it
             with SETTINGS_PATH.open('r') as fp:
                 settings = json.load(fp)
         else:
             settings = {}
             CONFIG_ROOT.mkdir(exist_ok=True)
 
-        if any([hasattr(args, arg) for arg in ['from_email',
-                                               'password',
-                                               'to_email',
-                                               'name']]):
-            if args.from_email:
-                settings['from_email'] = args.from_email
-            if args.password:
-                settings['password'] = args.password
-            if args.to_email:
-                if 'to_email' in settings:
-                    to_list = settings['to_email']
-                else:
-                    to_list = []
-                to_list.append(args.to_email)
-                settings['to_email'] = to_list
-            if args.name:
-                settings['name'] = args.name
+        # update any settings specified by user
+        for config_option in CONFIG_OPTIONS:
+            if hasattr(args, config_option):
+                settings[config_option] = getattr(args, config_option)
 
-            with SETTINGS_PATH.open('w') as fp:
-                json.dump(settings, fp)
+        # save config again
+        with SETTINGS_PATH.open('w') as fp:
+            json.dump(settings, fp)
 
-        if args.activate or args.deactivate:
-            if platform.system() == 'Windows':
-                schtasks = "c:\windows\System32\schtasks.exe"
-                python_path = sys.executable()
-                ipfreely_path = get_script_dir()
-                if args.activate:
-                    schargs = " /Create /SC HOURLY /TN 'ipfreely' /TR "
-                elif args.deactivate:
-                    schargs = " /Delete /TN 'ipfreely' /TR "
-                popen_str = schtasks + schargs + python_path + " " + ipfreely_path
+    elif args.command =='activate' or args.command == 'deactivate':
+        settings = _get_settings()
 
-                subprocess.Popen(popen_str)
+        os = platform.system()
+        if os == 'Windows':
+            schtasks = "c:\windows\System32\schtasks.exe"
+            python_path = sys.executable()
+            if args.command == 'activate':
+                schargs = " /Create /SC HOURLY /TN 'ipfreely' /TR "
+            elif args.command == 'deactivate':
+                schargs = " /Delete /TN 'ipfreely' /TR "
+            popen_str = schtasks + schargs + python_path + f" -m ipfreely {settings['mode']}"
+            subprocess.Popen(popen_str)
 
-            elif platform.system() == 'Linux':
-                if args.activate():
-                    # https://stackoverflow.com/questions/610839/how-can-i-programmatically-create-a-new-cron-job
-                    """echo "0 1 * * * /root/test.sh" | tee - a / var / spool / cron / root"""
-
-            elif platform.system() == 'Darwin':
-                pass
+        elif os == 'Linux' or os == 'Darwin':
+            cron.add_cron_lines(
+                cron_lines=f"0 * * * * python -m ipfreely {settings['mode']}"
+            )
 
 
 def main():
