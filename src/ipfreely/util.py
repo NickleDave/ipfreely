@@ -56,9 +56,9 @@ def send(settings, msg=None):
     if msg is None:
         # default message
         msg = MIMEText(
-            f"Current public IP is {ipgetter.myip()}"
+            f"Current public IP for {settings['name']} is {ipgetter.myip()}"
         )
-        msg['Subject'] = 'Current public IP address'
+        msg['Subject'] = f"Current public IP address for {settings['name']}"
         msg['From'] = settings['from']
         msg['To'] = settings['to']
 
